@@ -133,6 +133,9 @@ module bs_sid::sid {
         moneyness: Option<vector<u128>>,
         option_type: Option<String>,
         greeks: Option<vector<String>>,
+        /// Selects the theoretical surface: absent or `european` is the bare
+        /// name, `american` the `_AME` one. Only options carry it.
+        exercise_style: Option<String>,
         decimals: u8,
         /// Unit of this series' u64 timestamps — signed identity (e.g. `ms`, `ns`, `s`).
         timestamp_precision: String,
@@ -278,6 +281,7 @@ module bs_sid::sid {
         moneyness: Option<vector<u128>>,
         option_type: Option<String>,
         greeks: Option<vector<String>>,
+        exercise_style: Option<String>,
         decimals: u8,
         timestamp_precision: String,
     ): u256 {
@@ -292,6 +296,7 @@ module bs_sid::sid {
             moneyness,
             option_type,
             greeks,
+            exercise_style,
             decimals,
             timestamp_precision,
         };
@@ -318,6 +323,7 @@ module bs_sid::sid {
             base_asset,
             DEFAULT_QUOTE_ASSET.to_string(),
             expiry,
+            option::none(),
             option::none(),
             option::none(),
             option::none(),

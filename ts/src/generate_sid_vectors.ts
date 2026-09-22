@@ -290,6 +290,7 @@ function bodyMarkPx(
     moneyness?: number | number[];
     optionType?: string;
     greeks?: string[];
+    exerciseStyle?: string;
   },
 ): Uint8Array {
   // One feed spans perpetuals, futures and options, so instrument fields are
@@ -306,6 +307,7 @@ function bodyMarkPx(
     bOpt(o.moneyness !== undefined ? bVec(asList(o.moneyness).map((x) => bScaled(x, o.decimals))) : null),
     bOpt(o.optionType !== undefined ? bStr(routed(o.optionType)) : null),
     bOpt(o.greeks !== undefined ? bVec(o.greeks.map((g) => bStr(routed(g)))) : null),
+    bOpt(o.exerciseStyle !== undefined ? bStr(routed(o.exerciseStyle)) : null),
     bU8(o.decimals),
     bStr(o.precision ?? "ms"),
   );
@@ -691,6 +693,34 @@ export function build(): Record<string, Json | Vector[]> {
         options: { format: fmt, signature },
       },
       "not SUI-signable today (option mark is not a scalar); pinned so a future promotion cannot move ids",
+    ),
+    vectorCase(
+      "mark_px_option_american",
+      "mark.px",
+      bodyMarkPx({
+        decimals: 9,
+        asset: "option",
+        baseAsset: "HYPE",
+        exchange: "deribit",
+        expiry: ABSOLUTE,
+        strike: "42.50",
+        optionType: "C",
+        greeks: ["delta", "vega"],
+        exerciseStyle: "american",
+      }),
+      {
+        feed: "mark.px",
+        asset: "option",
+        base_asset: "HYPE",
+        exchange: "deribit",
+        expiry: ABSOLUTE,
+        strike: 42.5,
+        type: "C",
+        greeks: ["delta", "vega"],
+        exercise_style: "american",
+        options: { format: fmt, signature },
+      },
+      "the American surface is a distinct instrument, so it must not share mark_px_option's sid",
     ),
     vectorCase(
       "mark_px_option_atm",

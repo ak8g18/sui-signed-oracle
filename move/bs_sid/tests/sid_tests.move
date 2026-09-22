@@ -43,13 +43,14 @@ module bs_sid::sid_tests {
     const INDEX_PX_FUTURE: u256 = 0xa932a97048234543ae0b73f3a42a605e754ac77ea2dbf3154358c2476f4c822e;
     const INDEX_PX_FUTURE_TENOR: u256 = 0x63c45b292b35c00616fd6d8b55b80f6f5fa748bb14c69bca0f6c77a1c786ecc0;
     const INDEX_PX_SPOT_EQUITY: u256 = 0xa15f5d59dc91b2c73201c12e8b6490e4ae719bb4e8e3a4f9383e7206a72acd4d;
-    const MARK_PX_OPTION_ATM: u256 = 0xda87ca5cc16a95043ed09030f22ce8860dda63bc837038cbb93158f699d9bbb1;
-    const MARK_PX_FUTURE: u256 = 0x767852094662e0763fdfb8cc02f08969892b2d083159df16cb91ccb6505e3cd6;
-    const MARK_PX_FUTURE_TENOR: u256 = 0x619bdb1ce815f1520fd76398018024515fc5e9c652d60be893c936a80519fc8e;
-    const MARK_PX_FUTURE_EQUITY: u256 = 0xe8b762be292336c60f3d92bb14ad5a75c99f1e55dba7c69c2d7f1bd17cfb8fa5;
-    const MARK_PX_PERPETUAL: u256 = 0x8320d1bd10f808f939c234e27f8cdb3905c4811fe2622424a3ecdd490f57b87e;
-    const MARK_PX_OPTION_DECIMALS_5: u256 = 0xfe47cdb2a4ba151772e344147c9202a8eb30e241ebce1c04dfb5282563f19d14;
-    const MARK_PX_OPTION: u256 = 0xbd9d049995595ca20c98d3bf3bb153a5c2bf0a4615509a03c9b74450039b56b8;
+    const MARK_PX_OPTION_ATM: u256 = 0xfa171628667174e3e2926c3807fbeba20306cf367d64e860ccdbfe1e152d0956;
+    const MARK_PX_FUTURE: u256 = 0x7ee3ff953c1d80c6b645363b8228bf22f6f36518b46f39ebd2c2baea4bbfa671;
+    const MARK_PX_FUTURE_TENOR: u256 = 0x261a564a280eabf1dc0da689eebbfead6f1f12ba02415cc7eb3cd13c001189af;
+    const MARK_PX_FUTURE_EQUITY: u256 = 0x6121cf9dcd621481f81b2cff143a8b41dc307a7c1983a7379b89fc72a203b0cf;
+    const MARK_PX_PERPETUAL: u256 = 0x114c2646ef9dc22fe9f810cb55f78e113a67289e01a119898c7d333d4df2ddf6;
+    const MARK_PX_OPTION_DECIMALS_5: u256 = 0x129236327d35d6e9c837be44cd1a9b704f5c64632f6292fe055317a51b637c60;
+    const MARK_PX_OPTION: u256 = 0x8488be4a97d4939373de02dc564e7fc5ffed521a6960bf92a3d7e784dd3894c3;
+    const MARK_PX_OPTION_AMERICAN: u256 = 0x2487f181b14a2746f25da9cf109ce79e1965752a1ba2f25be89dd65a3d48ac44;
     const MODEL_PARAMS_SVI: u256 = 0x29f876378481972bf272eddcbb987579ec3a75a634533295c3c8c2cbfe548a6a;
     const MODEL_PARAMS_ASSET_OVERRIDE: u256 = 0x93fe2e645bbc214eb6d90fe8b1e8fe54c43ac6696a6a91e283ad52fd9c5c5d9a;
     const MODEL_PARAMS_TENOR: u256 = 0xc248b2a85721bc2e5d00b1dda8baa96d7f2a0270f111d5a511f2aa03b07bddae;
@@ -293,6 +294,7 @@ module bs_sid::sid_tests {
             option::none(),
             option::some(b"C".to_string()),
             option::some(vector[b"delta".to_string(), b"vega".to_string()]),
+            option::none(),
             DECIMALS_5,
             b"ms".to_string(),
         );
@@ -316,10 +318,34 @@ module bs_sid::sid_tests {
             option::none(),
             option::some(b"C".to_string()),
             option::some(vector[b"delta".to_string(), b"vega".to_string()]),
+            option::none(),
             DECIMALS,
             b"ms".to_string(),
         );
         assert_eq!(sid, MARK_PX_OPTION);
+    }
+
+    /// The American surface is a distinct instrument, not a view of the bare one.
+    #[test]
+    fun mark_px_option_american_matches_the_shared_vector() {
+        let sid = sid::mark_px_generic(
+            ORACLE_PACKAGE_ID,
+            b"option".to_string(),
+            b"deribit".to_string(),
+            b"HYPE".to_string(),
+            b"USD".to_string(),
+            option::some(sid::expiry_at(EXPIRY_MS)),
+            option::some(vector[sid::mark_strike(0, STRIKE_42_50, b"".to_string())]),
+            option::none(),
+            option::none(),
+            option::some(b"C".to_string()),
+            option::some(vector[b"delta".to_string(), b"vega".to_string()]),
+            option::some(b"american".to_string()),
+            DECIMALS,
+            b"ms".to_string(),
+        );
+        assert_eq!(sid, MARK_PX_OPTION_AMERICAN);
+        assert!(sid != MARK_PX_OPTION);
     }
 
     /// A named strike is a different instrument from any number.
@@ -336,6 +362,7 @@ module bs_sid::sid_tests {
             option::none(),
             option::none(),
             option::some(b"C".to_string()),
+            option::none(),
             option::none(),
             DECIMALS,
             b"ms".to_string(),
