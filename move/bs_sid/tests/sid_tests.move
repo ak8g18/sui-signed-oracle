@@ -11,8 +11,10 @@
 /// scope, so the public functions reproduce the pinned literals directly.
 ///
 /// Generator: `ts/src/generate_sid_vectors.ts` (`pnpm -C ts generate-vectors`),
-/// output `../vectors.json`. Every constant below is copied from it; the
-/// `preimage` field is the byte-level diff aid when a literal fails.
+/// output `../vectors.json`. Every version 1 constant below is copied from it;
+/// the `preimage` field is the byte-level diff aid when a literal fails. The
+/// version 2 constants come from the off-chain reference derivation until the
+/// generator mirrors version 2.
 #[test_only]
 module bs_sid::sid_tests {
     use bs_sid::sid;
@@ -65,6 +67,7 @@ module bs_sid::sid_tests {
     const MARK_PX_V2_OPTION: u256 = 0xc0ad48b3eb2552bd146a05aad4c471c27203a4c41bbbb963ffd9c2879befe354;
     const INDEX_PX_V2_BASIC: u256 = 0x8d1fe6799140e53b43e2fb1d359fc7bfb2e6ac75778bcdd823258a6b98590300;
     const INDEX_PX_V2_FULL: u256 = 0xb63110e90f5033ccd0ca0a9070cd916c6631f40838c300509df3d7b97e1a1e67;
+    const MARK_PX_V2_MONEYNESS: u256 = 0x8cd570099d5ed7dabe78b8b1602e2c22256afd5a894c3b4c1dbfdb5e78a301c6;
 
     // === index.px ===
 
@@ -594,6 +597,27 @@ module bs_sid::sid_tests {
             b"ms".to_string(),
         );
         assert_eq!(sid, MARK_PX_V2_OPTION);
+    }
+
+    #[test]
+    fun mark_px_v2_moneyness_matches_the_reference() {
+        let sid = sid::mark_px_v2_generic(
+            ORACLE_PACKAGE_ID,
+            b"option".to_string(),
+            b"deribit".to_string(),
+            b"BTC".to_string(),
+            b"USD".to_string(),
+            option::some(sid::expiry_at(EXPIRY_MS)),
+            option::none(),
+            option::none(),
+            option::some(vector[250_000_000]),
+            option::some(b"C".to_string()),
+            option::none(),
+            option::none(),
+            DECIMALS,
+            b"ms".to_string(),
+        );
+        assert_eq!(sid, MARK_PX_V2_MONEYNESS);
     }
 
     #[test]
